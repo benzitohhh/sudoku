@@ -1,3 +1,5 @@
+# See http://norvig.com/sudoku.html
+
 def cross(A, B):
     "Cross production of elements in A and elements in B."
     return [a+b for a in A for b in B]
@@ -45,6 +47,7 @@ def parse_grid(grid):
     return False if a contradiction detected"""
     ## To start, every square can be any digit; then assign values from the grid.
     values = dict((s, digits) for s in squares)
+    ## Now, assigns the initial values
     for s,d in grid_values(grid).items():
         if d in digits and not assign(values, s, d):
             return False ## (Fail if we can't assign d to square s.')
@@ -112,3 +115,39 @@ def test():
                                'C1', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9',
                                'A1', 'A3', 'B1', 'B3'])
     print 'All tests pass.'
+
+# Here's an easy puzzle:
+# It can be solved by strategies (1) abd (2) alone
+# grid1 = '003020600900305001001806400008102900700000008006708200002609500800203009005010300'
+# display(parse_grid(grid1))
+
+# Here's a harder puzzle:
+# (1) and (2) alone are insufficient to solve it
+grid2 = '4.....8.5.3..........7......2.....6.....8.4......1.......6.3.7.5..2.....1.4......'
+# display(parse_grid(grid2))
+
+def solve(grid):
+    return search(parse_grid(grid))
+    
+def search(values):
+    "Using depth-first search and propagation, try all possible values."
+    if values is False:
+        return False ## Failed earlier
+    if all(len(values[s]) == 1 for s in squares):
+        return values ## Solved!
+    ## Choose the unfilled square s with the fewest possibilities
+    n,s = min((len(values[s]), s) for s in squares if len(values[s]) > 1)
+    return some(search(assign(values.copy(), s, d))
+                for d in values[s])
+
+def some(seq):
+    "Return some element of seq that is true."
+    for e in seq:
+      if e: return e;
+    return False
+
+# Now we can solve grid2
+display(solve(grid2))
+
+    
+
